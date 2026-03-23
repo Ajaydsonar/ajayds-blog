@@ -1,5 +1,6 @@
 // src/routes/index.tsx
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { FeaturedProjects } from "@/components/sections/FeaturedProjects";
 import { HeroBanner } from "@/components/sections/HeroBanner";
 import { HeroCTA } from "@/components/sections/HeroCTA";
@@ -10,12 +11,17 @@ export const Route = createFileRoute("/")({
 });
 
 function HomePage() {
+	// Keep track of which slide is active at the top level
+	const [activeServiceIndex, setActiveServiceIndex] = useState(0);
+
 	return (
 		<div>
-			<HeroBanner />
-			<HeroCTA />
-			<FeaturedProjects />
-			<RecentPosts />
+			<HeroBanner current={activeServiceIndex} />
+			<div className="p-4">
+				<HeroCTA onSlideChange={(index) => setActiveServiceIndex(index)} />
+				<FeaturedProjects />
+				<RecentPosts />
+			</div>
 		</div>
 	);
 }
