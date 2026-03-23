@@ -6,9 +6,5 @@ export const Route = createFileRoute("/services/")({
 });
 
 function RouteComponent() {
-	return (
-		<div>
-			<HeroBanner />
-		</div>
-	);
+	return <div>Services</div>;
 }

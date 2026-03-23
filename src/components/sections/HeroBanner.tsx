@@ -3,16 +3,49 @@ import { motion, type Variants } from "motion/react";
 
 const services = [
 	{
-		statusText: "Open to your next big idea", // <--- Added
+		statusText: "Open to your next big idea",
 		theme: "indigo" as const,
+		bannerBg: "bg-indigo-50/50 dark:bg-indigo-950/20",
+		bannerBorder: "border-indigo-200 dark:border-indigo-400/70", // <--- Added full string
+		headline: (
+			<>
+				I Build{" "}
+				<span className="text-indigo-600 dark:text-indigo-400">
+					AI Powered Features/MVPs
+				</span>{" "}
+				<br className="hidden sm:block" /> for Solo Founders and Small Teams
+			</>
+		),
 	},
 	{
-		statusText: "Open to automate your boring work", // <--- Added
+		statusText: "Open to automate your boring work",
 		theme: "emerald" as const,
+		bannerBg: "bg-emerald-50/50 dark:bg-emerald-950/20",
+		bannerBorder: "border-emerald-200 dark:border-emerald-400/70", // <--- Added full string
+		headline: (
+			<>
+				I Build{" "}
+				<span className="text-emerald-600 dark:text-emerald-400">
+					AI Powered Automation
+				</span>{" "}
+				<br className="hidden sm:block" /> For Small Businesses
+			</>
+		),
 	},
 	{
-		statusText: "Open to uncovering hidden insights", // <--- Added
+		statusText: "Open to uncovering hidden insights",
 		theme: "amber" as const,
+		bannerBg: "bg-amber-50/50 dark:bg-amber-950/20",
+		bannerBorder: "border-amber-200 dark:border-amber-400/70", // <--- Added full string
+		headline: (
+			<>
+				I Build{" "}
+				<span className="text-amber-600 dark:text-amber-400">
+					AI Powered Data Pipelines
+				</span>{" "}
+				<br className="hidden sm:block" /> and Dashboards
+			</>
+		),
 	},
 ] as const;
 
@@ -40,7 +73,7 @@ const bannerVariants: Variants = {
 	show: {
 		opacity: 0.8,
 		scale: 1,
-		transition: { duration: 0.8, ease: [0.22, 1, 0.36, 1] as const },
+		transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
 	},
 };
 
@@ -60,7 +93,7 @@ const item: Variants = {
 	show: {
 		opacity: 1,
 		y: 0,
-		transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+		transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
 	},
 };
 
@@ -70,7 +103,7 @@ const avatarItem: Variants = {
 	show: {
 		opacity: 1,
 		scale: 1,
-		transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] as const },
+		transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
 	},
 };
 
@@ -78,22 +111,36 @@ export function HeroBanner({ current }: { current: number }) {
 	return (
 		<section className="relative w-full">
 			{/* ── Cover / Banner ───────────────────────────── */}
-			<div className="relative h-40 w-full overflow-hidden -z-10 sm:h-52">
-				<motion.div
-					variants={item}
-					initial="hidden"
-					animate="show"
-					className="absolute inset-0 bg-linear-to-br from-(--lagoon) via-(--palm) to-(--sea-ink)"
-				/>
-				{/* Noise grain overlay */}
-				<div
-					className="absolute inset-0 opacity-20 pointer-events-none"
-					style={{
-						backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E")`,
-						backgroundSize: "200px 200px",
-					}}
-				/>
-			</div>
+			<motion.div
+				variants={bannerVariants}
+				initial="hidden"
+				animate="show"
+				className={`relative h-48 w-full overflow-hidden -z-10 sm:h-56 transition-colors duration-700 border-b 
+					${services[current].bannerBorder} ${services[current].bannerBg}`}
+			>
+				<div className="absolute inset-0 flex flex-col items-center justify-center px-6 pb-12 sm:pb-8 sm:pl-32 md:pl-48">
+					<div className="grid justify-items-center sm:justify-items-start w-full max-w-2xl text-center sm:text-left">
+						{services.map((service, i) => {
+							const isActive = i === current;
+							return (
+								<div
+									key={`banner-headline-${i}`}
+									aria-hidden={!isActive}
+									className={`col-start-1 row-start-1 transition-all duration-700 ease-[0.22,1,0.36,1] ${
+										isActive
+											? "opacity-100 translate-y-0 z-10 scale-100"
+											: "opacity-0 translate-y-3 z-0 scale-95 pointer-events-none"
+									}`}
+								>
+									<h2 className="text-lg sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
+										{service.headline}
+									</h2>
+								</div>
+							);
+						})}
+					</div>
+				</div>
+			</motion.div>
 
 			{/* ── Profile section ──────────────────────────── */}
 			{/*
@@ -110,7 +157,7 @@ export function HeroBanner({ current }: { current: number }) {
 					 */}
 					<div className="flex w-full flex-col items-center -mt-14 sm:-mt-16  text-center sm:flex-row sm:items-end sm:text-left sm:gap-6">
 						{/* ── Avatar — pulled up over the banner ── */}
-						<motion.div variants={avatarItem} className="flex-shrink-0 ">
+						<motion.div variants={avatarItem} className="shrink-0 ">
 							<div className="h-28 w-28 rounded-full ring-4 ring-(--bg-base) sm:h-36 sm:w-36">
 								{/* Placeholder — swap for <img> later */}
 								<div className="flex h-full w-full items-center justify-center rounded-full bg-linear-to-br from-(--lagoon-deep) to-(--palm) text-4xl font-bold text-white">

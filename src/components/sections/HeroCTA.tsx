@@ -52,7 +52,7 @@ const services = [
 	},
 ] as const;
 
-const INTERVAL = 5000;
+const INTERVAL = 10000;
 
 // Unified Theme Configuration
 const themeConfig = {
