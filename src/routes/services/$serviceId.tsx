@@ -2,8 +2,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { ContactCTA } from "@/components/shared/ContactCTA";
-import { getProjectsByIds } from "@/data/c/projects";
-import { getService } from "@/data/c/services";
+import { getProjectsByIds } from "@/data/projects";
+import { getService } from "@/data/services";
 
 export const Route = createFileRoute("/services/$serviceId")({
 	// Loader runs before the component renders — on the server in SSR

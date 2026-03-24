@@ -1,7 +1,7 @@
 // src/routes/portfolio/index.tsx
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
-import { projects } from "@/data/c/projects";
+import { projects } from "@/data/projects";
 
 export const Route = createFileRoute("/portfolio/")({
 	component: PortfolioPage,

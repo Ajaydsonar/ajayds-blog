@@ -2,14 +2,14 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { ContactCTA } from "@/components/shared/ContactCTA";
-import { services } from "@/data/c/services";
+import { services } from "@/data/services";
 
 export const Route = createFileRoute("/services/")({
 	component: ServicesPage,
 });
 
 const serviceIcons: Record<string, React.ReactNode> = {
-	"ai-mvp-development": (
+	"ai-webapps-mvp": (
 		<svg
 			width="22"
 			height="22"
@@ -26,7 +26,7 @@ const serviceIcons: Record<string, React.ReactNode> = {
 			<path d="M8 21h8M12 17v4" />
 		</svg>
 	),
-	"data-pipelines-dashboards": (
+	"ai-data-pipelines": (
 		<svg
 			width="22"
 			height="22"

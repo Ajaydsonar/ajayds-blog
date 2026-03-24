@@ -2,8 +2,8 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { motion } from "motion/react";
 import { ContactCTA } from "@/components/shared/ContactCTA";
-import { getProject } from "@/data/c/projects";
-import { services } from "@/data/c/services";
+import { getProject } from "@/data/projects";
+import { services } from "@/data/services";
 
 export const Route = createFileRoute("/portfolio/$projectId")({
 	loader: ({ params }) => {
