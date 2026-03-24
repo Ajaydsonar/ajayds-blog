@@ -1,33 +1,12 @@
 // src/components/sections/FeaturedProjects.tsx
 import { Link } from "@tanstack/react-router";
 import { motion } from "motion/react";
+import { projects } from "@/data/projects";
 
-const projects = [
-	{
-		id: "project-one",
-		title: "SaaS Dashboard",
-		description:
-			"Full-stack app with auth, billing, and real-time data. Built for a US startup.",
-		stack: ["Next.js", "Node.js", "MongoDB"],
-		href: "/portfolio/project-one",
-	},
-	{
-		id: "project-two",
-		title: "Automation Pipeline",
-		description:
-			"Python scraper + REST API that processes 50k records/day for a logistics client.",
-		stack: ["Python", "FastAPI", "PostgreSQL"],
-		href: "/portfolio/project-two",
-	},
-	{
-		id: "project-three",
-		title: "E-commerce Platform",
-		description:
-			"Custom storefront with CMS, Stripe payments, and admin panel.",
-		stack: ["React", "Express", "Stripe"],
-		href: "/portfolio/project-three",
-	},
-];
+const featuredIds = ["sellerpilot", "nocalllost", "marginmonster"];
+const featured = featuredIds
+	.map((id) => projects.find((p) => p.id === id))
+	.filter(Boolean) as typeof projects;
 
 export function FeaturedProjects() {
 	return (
@@ -47,7 +26,7 @@ export function FeaturedProjects() {
 
 			{/* Cards */}
 			<div className="flex flex-col gap-4">
-				{projects.map((project, i) => (
+				{featured.map((project, i) => (
 					<motion.div
 						key={project.id}
 						initial={{ opacity: 0, y: 20 }}
@@ -59,7 +38,11 @@ export function FeaturedProjects() {
 							ease: [0.22, 1, 0.36, 1],
 						}}
 					>
-						<Link to={project.href} className="group block no-underline">
+						<Link
+							to="/portfolio/$projectId"
+							params={{ projectId: project.id }}
+							className="group block no-underline"
+						>
 							<div className="feature-card island-shell flex items-start justify-between gap-4 rounded-xl border border-[var(--line)] p-5 transition">
 								<div className="flex-1 min-w-0">
 									<h3 className="font-semibold text-[var(--sea-ink)] group-hover:text-[var(--lagoon-deep)] transition-colors">

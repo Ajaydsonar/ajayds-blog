@@ -24,7 +24,7 @@ export function ContactCTA({
 				</div>
 
 				<div className="relative z-10">
-					<p className="island-kicker mb-3">Available for new projects</p>
+					<p className="island-kicker mb-3">Ready when you are</p>
 					<h2 className="display-title text-2xl font-bold text-var(--sea-ink) sm:text-3xl">
 						{heading}
 					</h2>
