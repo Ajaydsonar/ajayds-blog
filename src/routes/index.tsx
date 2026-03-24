@@ -17,7 +17,7 @@ function HomePage() {
 	return (
 		<div>
 			<HeroBanner current={activeServiceIndex} />
-			<div className="p-4">
+			<div className="mx-4 md:mx-auto md:w-4/5">
 				<HeroCTA onSlideChange={(index) => setActiveServiceIndex(index)} />
 				<FeaturedProjects />
 				<RecentPosts />

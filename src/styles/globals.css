@@ -11,6 +11,10 @@
   --font-sans: "Manrope", ui-sans-serif, system-ui, sans-serif;
 }
 
+html, body {
+  overflow-x: hidden;
+}
+
 :root {
   --sea-ink: #173a40;
   --sea-ink-soft: #416166;

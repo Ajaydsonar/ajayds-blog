@@ -176,14 +176,17 @@ export function BottomNav() {
 			<motion.div
 				initial={{ y: 40, opacity: 0 }}
 				animate={{ y: 0, opacity: 1 }}
-				transition={{ type: "spring", stiffness: 400, damping: 30 }}
-				style={{ willChange: "transform" }}
+				transition={{
+					y: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
+					opacity: { duration: 0.25, ease: "easeOut" },
+					delay: 0.1,
+				}}
 				className="
 					pointer-events-auto
 					flex items-center p-1.5
 					rounded-full
 					bg-white/70 dark:bg-neutral-900/70
-					backdrop-blur-2xl
+					backdrop-blur-md
 					border border-black/5 dark:border-white/10
 					shadow-2xl shadow-black/10 dark:shadow-black/40
 				"
