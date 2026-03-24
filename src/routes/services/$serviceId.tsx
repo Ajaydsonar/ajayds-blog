@@ -243,7 +243,7 @@ function ServiceDetailPage() {
 				)}
 			</div>
 			<ContactCTA
-				heading={`Interested in ${service.title.toLowerCase()}?`}
+				heading={`Interested in ${service.title}?`}
 				subtext="Let's talk about your project. No commitment, just a conversation."
 			/>
 		</div>
