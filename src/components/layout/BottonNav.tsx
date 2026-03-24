@@ -107,7 +107,7 @@ const NavTab = memo(function NavTab({
 			{isActive && (
 				<motion.div
 					layoutId="bottom-nav-indicator"
-					className="absolute inset-0 rounded-full bg-neutral-900 dark:bg-white"
+					className="absolute inset-0 rounded-full bg-[var(--lagoon)] dark:bg-[var(--lagoon-deep)]"
 					transition={{
 						type: "spring",
 						stiffness: 500, // Slightly tuned for snappiness
@@ -124,7 +124,7 @@ const NavTab = memo(function NavTab({
 					className={`transition-colors duration-150 relative z-10 ${
 						isActive
 							? "text-white dark:text-neutral-900"
-							: "text-neutral-500 hover:text-neutral-700 dark:text-neutral-400 dark:hover:text-neutral-200"
+							: "text-[var(--sea-ink-soft)] hover:text-[var(--sea-ink)] dark:text-neutral-400 dark:hover:text-neutral-200"
 					}`}
 				>
 					<tab.icon active={isActive} />
@@ -185,10 +185,10 @@ export function BottomNav() {
 					pointer-events-auto
 					flex items-center p-1.5
 					rounded-full
-					bg-white/70 dark:bg-neutral-900/70
+					bg-[var(--surface)] dark:bg-[var(--surface)]
 					backdrop-blur-md
-					border border-black/5 dark:border-white/10
-					shadow-2xl shadow-black/10 dark:shadow-black/40
+					border border-[var(--chip-line)]
+					shadow-2xl shadow-black/10 dark:shadow-black/30
 				"
 			>
 				{tabs.map((tab, i) => (
