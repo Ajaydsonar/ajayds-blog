@@ -137,7 +137,7 @@ export default function ThemeToggle() {
 			onClick={toggle}
 			aria-label={`Theme: ${mode}. Click to cycle.`}
 			title={`Theme: ${mode}. Click to cycle.`}
-			className="relative flex items-center gap-1.5 overflow-hidden rounded-full border border-[var(--chip-line)] bg-[var(--chip-bg)] px-3 py-1.5 text-[var(--sea-ink)] shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(30,90,72,0.13)]"
+			className="relative flex items-center gap-1.5 overflow-hidden rounded-full border border-(--chip-line) bg-(--chip-bg) px-3 py-1.5 text-(--sea-ink) shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(30,90,72,0.13)]"
 		>
 			<span className="relative flex h-4 w-4 items-center justify-center">
 				<AnimatePresence mode="wait" initial={false}>

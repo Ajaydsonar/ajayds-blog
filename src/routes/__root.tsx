@@ -1,6 +1,7 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
+import { ChatWidget } from "#/components/chatbot/ChatWidget.tsx";
 import { BottomNav } from "#/components/layout/BottonNav";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 // import Footer from "../components/Footer";
@@ -44,12 +45,13 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
 				<HeadContent />
 			</head>
-			<body className="font-sans antialiased [overflow-wrap:anywhere] selection:bg-[rgba(79,184,178,0.24)]">
+			<body className="font-sans antialiased wrap:anywhere selection:bg-[rgba(79,184,178,0.24)]">
 				{/* Theme toggle — fixed top-right, always visible */}
 				<div className="fixed top-4 right-4 z-50">
 					<ThemeToggle />
 				</div>
 				{children}
+				<ChatWidget />
 				<BottomNav />
 				<TanStackDevtools
 					config={{

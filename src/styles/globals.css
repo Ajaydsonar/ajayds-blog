@@ -15,6 +15,17 @@ html, body {
   overflow-x: hidden;
 }
 
+
+/* Custom class for the textarea */
+.no-scrollbar::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+}
+
+.no-scrollbar {
+    -ms-overflow-style: none; /* IE and Edge */
+    scrollbar-width: none;    /* Firefox */
+}
+
 :root {
   --sea-ink: #173a40;
   --sea-ink-soft: #416166;

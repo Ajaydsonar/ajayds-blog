@@ -88,6 +88,7 @@ function ServicesPage() {
 					{services.map((service, i) => (
 						<motion.div
 							key={service.id}
+							id={service.id}
 							initial={{ opacity: 0, y: 24 }}
 							animate={{ opacity: 1, y: 0 }}
 							transition={{
