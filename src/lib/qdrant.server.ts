@@ -6,7 +6,7 @@ export const qdrant = new QdrantClient({
 });
 
 export async function searchWebsiteKnowledge(query: string) {
-	return await qdrant.query("ajayds_info", {
+	const results = await qdrant.query("ajayds_info", {
 		query: {
 			text: query,
 			model: "sentence-transformers/all-MiniLM-L6-v2",
@@ -14,4 +14,14 @@ export async function searchWebsiteKnowledge(query: string) {
 		limit: 5,
 		with_payload: true,
 	});
+
+	return results.points;
 }
+
+// searchWebsiteKnowledge("what services you guys provide?")
+// 	.then((data) => {
+// 		data.points.forEach((v) => {
+// 			console.dir(v);
+// 		});
+// 	})
+// 	.catch((e) => console.error(e));

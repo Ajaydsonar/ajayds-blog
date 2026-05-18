@@ -1,45 +1,27 @@
 // src/components/layout/ThemeToggle.tsx
-import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useState } from "react";
 
-type ThemeMode = "light" | "dark" | "auto";
+type ThemeMode = "light" | "dark";
 
 function getInitialMode(): ThemeMode {
-	if (typeof window === "undefined") return "auto";
+	if (typeof window === "undefined") return "light";
+
 	const stored = window.localStorage.getItem("theme");
-	if (stored === "light" || stored === "dark" || stored === "auto")
+
+	if (stored === "light" || stored === "dark") {
 		return stored;
-	return "auto";
+	}
+
+	return document.documentElement.classList.contains("dark") ? "dark" : "light";
 }
 
 function applyThemeMode(mode: ThemeMode) {
-	const prefersDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-	const resolved = mode === "auto" ? (prefersDark ? "dark" : "light") : mode;
 	const root = document.documentElement;
 
 	root.classList.remove("light", "dark");
-	root.classList.add(resolved);
-	root.style.colorScheme = resolved;
-
-	if (mode === "auto") {
-		root.removeAttribute("data-theme");
-	} else {
-		root.setAttribute("data-theme", mode);
-	}
-}
-
-// Wraps the theme swap in a native View Transition
-// so the browser animates between old and new screenshots
-function applyThemeWithTransition(mode: ThemeMode) {
-	if (!document.startViewTransition) {
-		// Fallback for browsers that don't support it yet (Firefox < 126)
-		applyThemeMode(mode);
-		return;
-	}
-
-	document.startViewTransition(() => {
-		applyThemeMode(mode);
-	});
+	root.classList.add(mode);
+	root.setAttribute("data-theme", mode);
+	root.style.colorScheme = mode;
 }
 
 function SunIcon() {
@@ -79,94 +61,81 @@ function MoonIcon() {
 	);
 }
 
-function AutoIcon() {
-	return (
-		<svg
-			width="15"
-			height="15"
-			viewBox="0 0 24 24"
-			fill="none"
-			stroke="currentColor"
-			strokeWidth="2"
-			strokeLinecap="round"
-			strokeLinejoin="round"
-			aria-hidden="true"
-		>
-			<circle cx="12" cy="12" r="9" />
-			<path d="M12 3v9l4 2" />
-		</svg>
-	);
-}
-
-const icons = { light: <SunIcon />, dark: <MoonIcon />, auto: <AutoIcon /> };
-const labels = { light: "Light", dark: "Dark", auto: "Auto" };
-const nextMode: Record<ThemeMode, ThemeMode> = {
-	auto: "light",
-	light: "dark",
-	dark: "auto",
+const labels: Record<ThemeMode, string> = {
+	light: "Light",
+	dark: "Dark",
 };
 
 export default function ThemeToggle() {
-	const [mode, setMode] = useState<ThemeMode>("auto");
-	const [direction] = useState(1);
+	const [mode, setMode] = useState<ThemeMode>(getInitialMode);
 
 	useEffect(() => {
-		const initial = getInitialMode();
-		setMode(initial);
-		applyThemeMode(initial); // no transition on first load
-	}, []);
-
-	useEffect(() => {
-		if (mode !== "auto") return;
-		const media = window.matchMedia("(prefers-color-scheme: dark)");
-		const onChange = () => applyThemeWithTransition("auto");
-		media.addEventListener("change", onChange);
-		return () => media.removeEventListener("change", onChange);
+		applyThemeMode(mode);
+		window.localStorage.setItem("theme", mode);
 	}, [mode]);
 
 	function toggle() {
-		const next = nextMode[mode];
-		setMode(next);
-		applyThemeWithTransition(next); // ← burst happens here
-		window.localStorage.setItem("theme", next);
+		setMode((current) => (current === "light" ? "dark" : "light"));
 	}
 
 	return (
 		<button
 			type="button"
 			onClick={toggle}
-			aria-label={`Theme: ${mode}. Click to cycle.`}
-			title={`Theme: ${mode}. Click to cycle.`}
+			aria-label={`Theme: ${mode}. Click to switch to ${
+				mode === "light" ? "dark" : "light"
+			}.`}
+			title={`Theme: ${mode}. Click to switch to ${
+				mode === "light" ? "dark" : "light"
+			}.`}
 			className="relative flex items-center gap-1.5 overflow-hidden rounded-full border border-(--chip-line) bg-(--chip-bg) px-3 py-1.5 text-(--sea-ink) shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(30,90,72,0.13)]"
 		>
 			<span className="relative flex h-4 w-4 items-center justify-center">
-				<AnimatePresence mode="wait" initial={false}>
-					<motion.span
-						key={mode}
-						initial={{ opacity: 0, y: 8 * direction, scale: 0.7 }}
-						animate={{ opacity: 1, y: 0, scale: 1 }}
-						exit={{ opacity: 0, y: -8 * direction, scale: 0.7 }}
-						transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-						className="absolute inset-0 flex items-center justify-center"
-					>
-						{icons[mode]}
-					</motion.span>
-				</AnimatePresence>
+				<span
+					className={[
+						"absolute inset-0 flex items-center justify-center transition duration-200 ease-out",
+						mode === "light"
+							? "translate-y-0 scale-100 opacity-100"
+							: "-translate-y-1 scale-75 opacity-0",
+					].join(" ")}
+				>
+					<SunIcon />
+				</span>
+
+				<span
+					className={[
+						"absolute inset-0 flex items-center justify-center transition duration-200 ease-out",
+						mode === "dark"
+							? "translate-y-0 scale-100 opacity-100"
+							: "translate-y-1 scale-75 opacity-0",
+					].join(" ")}
+				>
+					<MoonIcon />
+				</span>
 			</span>
 
 			<span className="relative flex h-4 w-9 items-center overflow-hidden text-xs font-semibold">
-				<AnimatePresence mode="wait" initial={false}>
-					<motion.span
-						key={mode}
-						initial={{ opacity: 0, y: 8 * direction }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -8 * direction }}
-						transition={{ duration: 0.18, ease: [0.32, 0.72, 0, 1] }}
-						className="absolute"
-					>
-						{labels[mode]}
-					</motion.span>
-				</AnimatePresence>
+				<span
+					className={[
+						"absolute transition duration-200 ease-out",
+						mode === "light"
+							? "translate-y-0 opacity-100"
+							: "-translate-y-2 opacity-0",
+					].join(" ")}
+				>
+					{labels.light}
+				</span>
+
+				<span
+					className={[
+						"absolute transition duration-200 ease-out",
+						mode === "dark"
+							? "translate-y-0 opacity-100"
+							: "translate-y-2 opacity-0",
+					].join(" ")}
+				>
+					{labels.dark}
+				</span>
 			</span>
 		</button>
 	);

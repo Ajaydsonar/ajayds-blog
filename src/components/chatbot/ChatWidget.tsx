@@ -1,20 +1,32 @@
+import { useChat } from "@ai-sdk/react";
+import { DefaultChatTransport, type UIMessage } from "ai";
 import * as React from "react";
-import { chatMessage } from "#/server/chat.action";
 import { ChatInput } from "./ChatInput";
-import { ChatMessage, type ChatMessageItem } from "./ChatMessage";
-import type { SourcePayload } from "./SourceLinks";
+import { ChatMessage } from "./ChatMessage";
 
 interface ChatWidgetProps {
 	className?: string;
 	positionClassName?: string;
 }
 
-function createMessageId() {
-	if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
-		return crypto.randomUUID();
-	}
+const welcomeMessage: UIMessage = {
+	id: "welcome-message",
+	role: "assistant",
+	parts: [
+		{
+			type: "text",
+			text: "Hey, I'm Ajay's AI assistant. Ask me about his work, projects, skills, or how to contact him.",
+		},
+	],
+};
 
-	return Math.random().toString(36).slice(2);
+function getMessageText(message?: UIMessage) {
+	if (!message) return "";
+
+	return message.parts
+		.filter((part) => part.type === "text")
+		.map((part) => part.text)
+		.join("");
 }
 
 export function ChatWidget({
@@ -22,27 +34,43 @@ export function ChatWidget({
 	positionClassName = "fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+6rem)] z-[60] sm:right-6 sm:bottom-6",
 }: ChatWidgetProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
-	const [isLoading, setIsLoading] = React.useState(false);
+	// const chatContainerRef = React.useRef(null);
 
-	const [messages, setMessages] = React.useState<ChatMessageItem[]>([
-		{
-			id: createMessageId(),
-			role: "assistant",
-			content:
-				"Hey, I'm Ajay's AI assistant. Ask me about his work, projects, skills, or how to contact him.",
-		},
-	]);
+	const { messages, sendMessage, status, error } = useChat({
+		transport: new DefaultChatTransport({
+			api: "/api/chat",
+		}),
+	});
 
 	const messagesEndRef = React.useRef<HTMLDivElement | null>(null);
 
+	const visibleMessages = React.useMemo(
+		() => [welcomeMessage, ...messages],
+		[messages],
+	);
+
+	const isSending = status === "submitted" || status === "streaming";
+
+	const lastMessage = messages.at(-1);
+	const isWaitingForFirstToken =
+		status === "submitted" ||
+		(status === "streaming" &&
+			(!lastMessage ||
+				lastMessage.role !== "assistant" ||
+				!getMessageText(lastMessage).trim()));
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <I need it bro>
 	React.useEffect(() => {
 		if (!isOpen) return;
 
-		messagesEndRef.current?.scrollIntoView({
-			behavior: "smooth",
-			block: "end",
+		const frame = requestAnimationFrame(() => {
+			messagesEndRef.current?.scrollIntoView({
+				block: "end",
+			});
 		});
-	}, [isOpen]);
+
+		return () => cancelAnimationFrame(frame);
+	}, [isOpen, visibleMessages, status]); //,
 
 	React.useEffect(() => {
 		function closeOnEscape(event: KeyboardEvent) {
@@ -53,47 +81,8 @@ export function ChatWidget({
 		return () => window.removeEventListener("keydown", closeOnEscape);
 	}, []);
 
-	async function sendMessage(content: string) {
-		const userMessage: ChatMessageItem = {
-			id: createMessageId(),
-			role: "user",
-			content,
-		};
-
-		setMessages((current) => [...current, userMessage]);
-		setIsLoading(true);
-
-		try {
-			const response = await chatMessage({
-				data: {
-					message: content,
-				},
-			});
-
-			setMessages((current) => [
-				...current,
-				{
-					id: createMessageId(),
-					role: "assistant",
-					content:
-						response.answer ||
-						"I couldn't find a clear answer from the website yet.",
-					sources: response.sources as SourcePayload[],
-				},
-			]);
-		} catch {
-			setMessages((current) => [
-				...current,
-				{
-					id: createMessageId(),
-					role: "assistant",
-					content:
-						"Something went wrong while answering that. Please try again.",
-				},
-			]);
-		} finally {
-			setIsLoading(false);
-		}
+	async function handleSendMessage(content: string) {
+		await sendMessage({ text: content });
 	}
 
 	return (
@@ -137,12 +126,16 @@ export function ChatWidget({
 							</button>
 						</header>
 
-						<div className="flex-1 space-y-3 overflow-y-auto px-3 py-4">
-							{messages.map((message) => (
-								<ChatMessage key={message.id} message={message} />
+						<div className="flex-1 space-y-3 overflow-y-auto px-3 py-4 no-scrollbar">
+							{visibleMessages.map((message) => (
+								<ChatMessage
+									key={message.id}
+									message={message}
+									status={status}
+								/>
 							))}
 
-							{isLoading ? (
+							{isWaitingForFirstToken ? (
 								<div className="flex justify-start">
 									<div className="rounded-2xl rounded-bl-md border border-[var(--line)] bg-[var(--chip-bg)] px-3.5 py-2.5 text-sm text-[var(--sea-ink-soft)]">
 										<span className="inline-flex items-center gap-1">
@@ -154,10 +147,18 @@ export function ChatWidget({
 								</div>
 							) : null}
 
+							{error ? (
+								<div className="flex justify-start">
+									<div className="rounded-2xl rounded-bl-md border border-[var(--line)] bg-[var(--chip-bg)] px-3.5 py-2.5 text-sm text-[var(--sea-ink-soft)]">
+										Something went wrong while answering that. Please try again.
+									</div>
+								</div>
+							) : null}
+
 							<div ref={messagesEndRef} />
 						</div>
 
-						<ChatInput disabled={isLoading} onSend={sendMessage} />
+						<ChatInput disabled={isSending} onSend={handleSendMessage} />
 					</section>
 				) : null}
 

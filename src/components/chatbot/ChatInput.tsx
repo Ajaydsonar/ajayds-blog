@@ -9,13 +9,14 @@ export function ChatInput({ disabled = false, onSend }: ChatInputProps) {
 	const [value, setValue] = React.useState("");
 	const textareaRef = React.useRef<HTMLTextAreaElement | null>(null);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: <I need it bro>
 	React.useEffect(() => {
 		const textarea = textareaRef.current;
 		if (!textarea) return;
 
 		textarea.style.height = "0px";
 		textarea.style.height = `${Math.min(textarea.scrollHeight, 112)}px`;
-	}, []);
+	}, [value]);
 
 	function submitMessage() {
 		const message = value.trim();
