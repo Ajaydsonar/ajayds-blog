@@ -1,7 +1,5 @@
 import type { ChatStatus, UIMessage } from "ai";
-import { Children } from "react";
 import { Streamdown } from "streamdown";
-import { hr } from "zod/locales";
 
 interface ChatMessageProps {
 	message: UIMessage;
@@ -33,7 +31,7 @@ export function ChatMessage({ message, status }: ChatMessageProps) {
 						: "rounded-bl-md border border-[var(--line)] bg-[var(--chip-bg)] text-[var(--sea-ink)]",
 				].join(" ")}
 			>
-				<p className="whitespace-pre-wrap">
+				<div className="whitespace-pre-wrap">
 					<Streamdown
 						animated
 						isAnimating={status === "streaming"}
@@ -51,14 +49,23 @@ export function ChatMessage({ message, status }: ChatMessageProps) {
 								</h4>
 							),
 							p: ({ children }) => (
-								<p className="text-md leading-relaxed">{children}</p>
+								<p className="leading-relaxed">{children}</p>
 							),
-							hr: ({ children }) => <hr className="py-2" />,
+							hr: () => <hr className="py-2" />,
+							a: ({ children, href, className }) => (
+								<a
+									href={href}
+									target="_blank"
+									className={`inline-flex items-center bg-[var(--lagoon)]/10 text-[var(--lagoon)] p-1 mx-1 rounded-3xl border border-[var(--lagoon)] text-xs ${className ?? ""}`}
+								>
+									{children}
+								</a>
+							),
 						}}
 					>
 						{text}
 					</Streamdown>
-				</p>
+				</div>
 			</div>
 		</article>
 	);

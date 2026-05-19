@@ -128,11 +128,37 @@ export function ChatWidget({
 
 						<div className="flex-1 space-y-3 overflow-y-auto px-3 py-4 no-scrollbar">
 							{visibleMessages.map((message) => (
-								<ChatMessage
-									key={message.id}
-									message={message}
-									status={status}
-								/>
+								<React.Fragment key={message.id}>
+									{message.parts.map((part, index) => {
+										switch (part.type) {
+											case "text":
+												return (
+													<ChatMessage
+														// biome-ignore lint/suspicious/noArrayIndexKey: <ok>
+														key={`${message.id}-${index}`}
+														message={message}
+														status={status}
+													/>
+												);
+
+											case "tool-getInformation":
+												return (
+													// biome-ignore lint/suspicious/noArrayIndexKey: <ok>
+													<div key={`${message.id}-${index}`}>
+														call
+														{part.state === "output-available" ? "ed" : "ing"}{" "}
+														tool: {part.type}
+														<pre className="my-4 bg-zinc-100 p-2 rounded-sm">
+															{JSON.stringify(part.input, null, 2)}
+														</pre>
+													</div>
+												);
+
+											default:
+												return null;
+										}
+									})}
+								</React.Fragment>
 							))}
 
 							{isWaitingForFirstToken ? (

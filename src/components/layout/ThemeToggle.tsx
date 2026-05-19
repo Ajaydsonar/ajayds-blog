@@ -67,27 +67,55 @@ const labels: Record<ThemeMode, string> = {
 };
 
 export default function ThemeToggle() {
-	const [mode, setMode] = useState<ThemeMode>(getInitialMode);
+	const [mounted, setMounted] = useState(false);
+	const [mode, setMode] = useState<ThemeMode>("light");
 
 	useEffect(() => {
+		const initialMode = getInitialMode();
+
+		setMode(initialMode);
+		applyThemeMode(initialMode);
+		setMounted(true);
+	}, []);
+
+	useEffect(() => {
+		if (!mounted) return;
+
 		applyThemeMode(mode);
 		window.localStorage.setItem("theme", mode);
-	}, [mode]);
+	}, [mode, mounted]);
 
 	function toggle() {
 		setMode((current) => (current === "light" ? "dark" : "light"));
+	}
+
+	const nextMode = mode === "light" ? "dark" : "light";
+
+	if (!mounted) {
+		return (
+			<button
+				type="button"
+				aria-label="Toggle theme"
+				title="Toggle theme"
+				className="relative flex items-center gap-1.5 overflow-hidden rounded-full border border-(--chip-line) bg-(--chip-bg) px-3 py-1.5 text-(--sea-ink) shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(30,90,72,0.13)]"
+			>
+				<span className="relative flex h-4 w-4 items-center justify-center opacity-0">
+					<SunIcon />
+				</span>
+
+				<span className="relative flex h-4 w-9 items-center overflow-hidden text-xs font-semibold opacity-0">
+					Light
+				</span>
+			</button>
+		);
 	}
 
 	return (
 		<button
 			type="button"
 			onClick={toggle}
-			aria-label={`Theme: ${mode}. Click to switch to ${
-				mode === "light" ? "dark" : "light"
-			}.`}
-			title={`Theme: ${mode}. Click to switch to ${
-				mode === "light" ? "dark" : "light"
-			}.`}
+			aria-label={`Theme: ${mode}. Click to switch to ${nextMode}.`}
+			title={`Theme: ${mode}. Click to switch to ${nextMode}.`}
 			className="relative flex items-center gap-1.5 overflow-hidden rounded-full border border-(--chip-line) bg-(--chip-bg) px-3 py-1.5 text-(--sea-ink) shadow-[0_8px_22px_rgba(30,90,72,0.08)] transition hover:-translate-y-0.5 hover:shadow-[0_10px_26px_rgba(30,90,72,0.13)]"
 		>
 			<span className="relative flex h-4 w-4 items-center justify-center">

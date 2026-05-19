@@ -15,7 +15,11 @@ export async function searchWebsiteKnowledge(query: string) {
 		with_payload: true,
 	});
 
-	return results.points;
+	const context = results.points
+		.map((chunk: any) => chunk.text || JSON.stringify(chunk))
+		.join("\n\n");
+
+	return context;
 }
 
 // searchWebsiteKnowledge("what services you guys provide?")
