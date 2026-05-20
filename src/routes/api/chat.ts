@@ -9,8 +9,15 @@ import {
 	type UIDataTypes,
 	type UIMessage,
 } from "ai";
+import Airtable from "airtable";
 import { z } from "zod";
 import { searchWebsiteKnowledge } from "#/lib/qdrant.server.ts";
+
+const airTableBase = new Airtable({
+	apiKey: process.env.AIRTABLE_ACCESS_TOKEN,
+}).base(process.env.AIRTABLE_BASE_ID!);
+
+const LEAD_INTENT = ["HOT", "WARM", "COLD"] as const;
 
 const tools = {
 	getKnowledgeBase: tool({
@@ -27,6 +34,65 @@ const tools = {
 		},
 		onInputAvailable: ({ input }) => {
 			console.log("Complete input:", input);
+		},
+	}),
+	saveLead: tool({
+		description:
+			"Saves a qualified customer lead into Airtable and sends an instant Telegram alert.",
+		inputSchema: z.object({
+			name: z.string().describe("The full name of the lead"),
+			email: z.email("Valid email address"),
+			phone: z.string().describe("Contact phone number"),
+			notes: z
+				.string()
+				.describe("Detailed summary of what services or projects they need"),
+			intent: z
+				.enum(LEAD_INTENT)
+				.describe("Intent of the lead : HOT | COLD | WARM"),
+		}),
+		execute: async ({ email, name, intent, notes, phone }) => {
+			try {
+				await airTableBase(process.env.AIRTABLE_TABLE_NAME!).create([
+					{
+						fields: {
+							Name: name,
+							Email: email,
+							Phone: phone,
+							Notes: notes,
+							Intent: intent,
+						},
+					},
+				]);
+
+				// 2. Format Telegram Markdown Message
+				const telegramMessage =
+					`🔥 *New AI Lead Captured!*\n\n` +
+					`👤 *Name:* ${name}\n` +
+					`📧 *Email:* ${email}\n` +
+					`📞 *Phone:* ${phone}\n` +
+					`📝 *Needs:* ${notes}`;
+
+				// 3. Send Telegram Notification via Bot API
+				const telegramUrl = `https://telegram.org{process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+
+				await fetch(telegramUrl, {
+					method: "POST",
+					headers: { "Content-Type": "application/json" },
+					body: JSON.stringify({
+						chat_id: process.env.TELEGRAM_CHAT_ID,
+						text: telegramMessage,
+						parse_mode: "Markdown", // Enables bold formatting
+					}),
+				});
+
+				return {
+					success: true,
+					message: "Lead recorded and business owner notified via Telegram.",
+				};
+			} catch (error: any) {
+				console.error("Failed to log lead or send Telegram message:", error);
+				return { success: false, message: "Failed to record lead." };
+			}
 		},
 	}),
 };
