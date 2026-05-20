@@ -5,6 +5,7 @@ import {
 	type InferUITools,
 	stepCountIs,
 	streamText,
+	type ToolSet,
 	tool,
 	type UIDataTypes,
 	type UIMessage,
@@ -73,7 +74,7 @@ const tools = {
 					`📝 *Needs:* ${notes}`;
 
 				// 3. Send Telegram Notification via Bot API
-				const telegramUrl = `https://telegram.org{process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
+				const telegramUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/sendMessage`;
 
 				await fetch(telegramUrl, {
 					method: "POST",
@@ -95,7 +96,7 @@ const tools = {
 			}
 		},
 	}),
-};
+} satisfies ToolSet;
 
 export type ChatTools = InferUITools<typeof tools>;
 export type ChatMessage = UIMessage<never, UIDataTypes, ChatTools>;
@@ -123,8 +124,7 @@ export const Route = createFileRoute("/api/chat")({
 
 				const results = streamText({
 					model: google("gemini-3.1-flash-lite"),
-					system: `# AjayDS Website Assistant System Prompt
-
+					system: `
 You are the official AI assistant for AjayDS, an AI development agency founded and run by Ajay Dhanraj Sonar.
 
 ## Verified Company Context
@@ -192,25 +192,69 @@ Keep formatting minimal, clean, and easy to read.
 3. Pricing is project-based and depends on complexity.
 4. Never guarantee revenue, traffic, sales, rankings, conversions, or business growth.
 5. If information is missing, say Ajay can confirm it.
-6. For serious leads, politely collect:
-   - Name
-   - Email or WhatsApp
-   - Business type
-   - Project goal
-   - Budget range
-   - Timeline
+6. For serious leads, politely collect their **Name**, **Email**, **Phone with country code**, and a description of **what they want**.
+7. As soon as you have these four pieces of information — **Name**, **Email**, **valid Phone with country code**, and **what they want** — immediately call the \`saveLead\` tool with:
+   - **name**: The lead's full name.
+   - **email**: The lead's valid email address.
+   - **phone**: The normalized phone number (with country code).
+   - **notes**: A detailed summary of what they wanted, their project needs, or services requested.
+   - **intent**: The determined intent (HOT | WARM | COLD).
+8. Determine the \`intent\` parameter based on:
+   - **HOT**: High urgency, clear project scope, ready to start immediately, or explicitly eager to hire Ajay.
+   - **WARM**: Interested, asking about pricing/services, exploring ideas/solutions, but not necessarily starting today.
+   - **COLD**: Casual browsing, vague/unrelated questions, or low interest.
+9. Before calling \`saveLead\`, normalize the phone number into this format: \`+<country code> <phone number>\`.
+10. Do not call \`saveLead\` until the phone number includes a country code.
+11. After calling \`saveLead\`, warmly confirm to the visitor that their info has been recorded and that Ajay has been notified. Give them direct links to follow up: [Email Ajay](mailto:ajay@ajayds.com) or [WhatsApp Ajay](https://wa.me/918788221865).
+
+## Phone Number Handling
+- Always collect the visitor’s phone number with a **country code**.
+- Correct format examples:
+  - India: **+91 8788221865**
+  - USA: **+1 4155552671**
+  - UK: **+44 7123456789**
+- If the visitor gives a phone number without a country code, ask for their country or ask them to resend the number with country code.
+- If the visitor provides their country name, infer the country code and format the phone number properly.
+  - Example: If the visitor says they are from India and gives \`8788221865\`, store it as \`+91 8788221865\`.
+- If the country is unclear, do **not** guess. Ask one short follow-up question.
+- Do not call \`saveLead\` until the phone number includes a country code.
 
 ## Lead Handling
-If the visitor seems interested, ask one simple question to qualify them.
-
-Example:
-“Sounds like something AjayDS can help with. What are you trying to build or automate?”
-
-If they are ready to talk:
-“Great. You can contact Ajay directly by [email](mailto:ajay@ajayds.com) or on [WhatsApp](https://wa.me/918788221865).”`,
+- Be proactive but friendly.
+- If a visitor is interested in working with Ajay or building something, ask conversational, warm questions to get their **Name**, **Email**, **Phone with country code**, and project description.
+- Example: "I'd love to help you get in touch with Ajay! Could you share your name, email, phone number with country code, and a brief description of what you want to build?"
+- Once you have the required info, call \`saveLead\` in the background and confirm to the visitor that they are all set and Ajay will reach out..`,
 					messages: await convertToModelMessages(messages),
 					tools,
-					stopWhen: stepCountIs(2),
+					stopWhen: stepCountIs(5),
+
+					onStepFinish({
+						stepNumber,
+						text,
+						toolCalls,
+						toolResults,
+						finishReason,
+						usage,
+					}) {
+						console.log("--- STEP FINISHED ---");
+						console.log({
+							stepNumber,
+							text,
+							finishReason,
+							usage,
+						});
+
+						toolCalls.map((call) => {
+							console.log(call.toolName);
+							console.log(call.input);
+							return {};
+						});
+						toolResults.map((result) => {
+							console.log(result.toolName);
+							console.log(result.output);
+							return {};
+						});
+					},
 				});
 
 				return results.toUIMessageStreamResponse();
