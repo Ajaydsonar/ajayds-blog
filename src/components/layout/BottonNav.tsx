@@ -110,9 +110,9 @@ const NavTab = memo(function NavTab({
 					className="absolute inset-0 rounded-full bg-[var(--lagoon)] dark:bg-[var(--lagoon-deep)]"
 					transition={{
 						type: "spring",
-						stiffness: 500, // Slightly tuned for snappiness
-						damping: 35,
-						mass: 0.8,
+						stiffness: 420,
+						damping: 30,
+						mass: 0.6,
 					}}
 					style={{ willChange: "transform" }} // 🚀 OPTIMIZATION 2: Force GPU compositing
 				/>
@@ -141,7 +141,7 @@ const NavTab = memo(function NavTab({
 						width: isActive ? "auto" : 0,
 						opacity: isActive ? 1 : 0,
 					}}
-					transition={{ duration: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+					transition={{ duration: 0.15, ease: [0.16, 1, 0.3, 1] }}
 					className="overflow-hidden whitespace-nowrap"
 					style={{ willChange: "width, opacity" }}
 				>
@@ -174,12 +174,12 @@ export function BottomNav() {
 			className="fixed bottom-6 left-1/2 z-50 pointer-events-none -translate-x-1/2"
 		>
 			<motion.div
-				initial={{ y: 40, opacity: 0 }}
+				initial={{ y: 8, opacity: 0 }}
 				animate={{ y: 0, opacity: 1 }}
 				transition={{
-					y: { duration: 0.3, ease: [0.22, 1, 0.36, 1] },
-					opacity: { duration: 0.25, ease: "easeOut" },
-					delay: 0.1,
+					duration: 0.25,
+					ease: [0.16, 1, 0.3, 1],
+					delay: 0.05,
 				}}
 				className="
 					pointer-events-auto
