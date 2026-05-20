@@ -67,13 +67,13 @@ const badgeTheme = {
 	},
 };
 
-// Banner animates in first — fades + very subtle scale-down
+// Banner animates in first — fades + extremely subtle scale-down
 const bannerVariants: Variants = {
-	hidden: { opacity: 0, scale: 1.04 },
+	hidden: { opacity: 0, scale: 1.01 },
 	show: {
 		opacity: 0.8,
 		scale: 1,
-		transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
+		transition: { duration: 0.45, ease: [0.16, 1, 0.3, 1] as const },
 	},
 };
 
@@ -82,28 +82,28 @@ const container: Variants = {
 	hidden: {},
 	show: {
 		transition: {
-			delayChildren: 0.5,
-			staggerChildren: 0.1,
+			delayChildren: 0.35,
+			staggerChildren: 0.06,
 		},
 	},
 };
 
 const item: Variants = {
-	hidden: { opacity: 0, y: 16 },
+	hidden: { opacity: 0, y: 6 },
 	show: {
 		opacity: 1,
 		y: 0,
-		transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
+		transition: { duration: 0.35, ease: [0.16, 1, 0.3, 1] as const },
 	},
 };
 
-// Avatar pops in with a subtle scale
+// Avatar pops in with a very subtle scale
 const avatarItem: Variants = {
-	hidden: { opacity: 0, scale: 0.85 },
+	hidden: { opacity: 0, scale: 0.95 },
 	show: {
 		opacity: 1,
 		scale: 1,
-		transition: { duration: 0.4, ease: [0.22, 1, 0.36, 1] as const },
+		transition: { duration: 0.4, ease: [0.16, 1, 0.3, 1] as const },
 	},
 };
 
@@ -115,7 +115,7 @@ export function HeroBanner({ current }: { current: number }) {
 				variants={bannerVariants}
 				initial="hidden"
 				animate="show"
-				className={`relative h-48 w-full overflow-hidden -z-10 sm:h-56 transition-colors duration-700 border-b 
+				className={`relative h-48 w-full overflow-hidden -z-10 sm:h-56 transition-colors duration-500 border-b 
 					${services[current].bannerBorder} ${services[current].bannerBg}`}
 			>
 				<div className="absolute inset-0 flex flex-col items-center justify-center px-6 pb-12 sm:pb-8 sm:pl-32 md:pl-48">
@@ -126,10 +126,10 @@ export function HeroBanner({ current }: { current: number }) {
 								<div
 									key={`banner-headline-${i}`}
 									aria-hidden={!isActive}
-									className={`col-start-1 row-start-1 transition-all duration-700 ease-[0.22,1,0.36,1] ${
+									className={`col-start-1 row-start-1 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
 										isActive
 											? "opacity-100 translate-y-0 z-10 scale-100"
-											: "opacity-0 translate-y-3 z-0 scale-95 pointer-events-none"
+											: "opacity-0 translate-y-2 z-0 scale-98 pointer-events-none"
 									}`}
 								>
 									<h2 className="text-lg sm:text-2xl md:text-3xl font-bold tracking-tight text-zinc-800 dark:text-zinc-100">
@@ -193,10 +193,10 @@ export function HeroBanner({ current }: { current: number }) {
 											<span
 												key={`status-badge-${i}`}
 												aria-hidden={!isActive}
-												className={`col-start-1 row-start-1 inline-flex w-max items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-all duration-700 ease-[0.22,1,0.36,1] ${themeClass.wrapper} ${
+												className={`col-start-1 row-start-1 inline-flex w-max items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-semibold transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${themeClass.wrapper} ${
 													isActive
 														? "opacity-100 translate-y-0 z-10 pointer-events-auto"
-														: "opacity-0 translate-y-2 z-0 pointer-events-none"
+														: "opacity-0 translate-y-1 z-0 pointer-events-none"
 												}`}
 											>
 												{/* Ping Indicator */}

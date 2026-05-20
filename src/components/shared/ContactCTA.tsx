@@ -11,10 +11,10 @@ export function ContactCTA({
 }: ContactCTAProps) {
 	return (
 		<motion.section
-			initial={{ opacity: 0, y: 24 }}
+			initial={{ opacity: 0, y: 8 }}
 			whileInView={{ opacity: 1, y: 0 }}
-			viewport={{ once: true, margin: "-40px" }}
-			transition={{ duration: 0.5, ease: [0.22, 1, 0.36, 1] }}
+			viewport={{ once: true, margin: "-20px" }}
+			transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
 			className="page-wrap mt-20 mb-32"
 		>
 			<div className="island-shell relative overflow-hidden rounded-2xl px-8 py-10 text-center sm:px-12">
@@ -37,9 +37,9 @@ export function ContactCTA({
 						{/* Email */}
 						<motion.a
 							href="mailto:ajay@ajayds.com"
-							whileHover={{ scale: 1.03, y: -2 }}
-							whileTap={{ scale: 0.97 }}
-							transition={{ duration: 0.18 }}
+							whileHover={{ scale: 1.015, y: -1 }}
+							whileTap={{ scale: 0.985 }}
+							transition={{ duration: 0.12 }}
 							className="inline-flex items-center gap-2 rounded-xl border border-var(--chip-line) bg-var(--chip-bg) px-6 py-3 text-sm font-semibold text-var(--sea-ink) no-underline shadow-sm transition hover:shadow-md"
 						>
 							<svg
@@ -64,9 +64,9 @@ export function ContactCTA({
 							href="https://wa.me/91XXXXXXXXXX?text=Hi%20Ajay%2C%20I%20have%20a%20project%20I'd%20like%20to%20discuss."
 							target="_blank"
 							rel="noopener noreferrer"
-							whileHover={{ scale: 1.03, y: -2 }}
-							whileTap={{ scale: 0.97 }}
-							transition={{ duration: 0.18 }}
+							whileHover={{ scale: 1.015, y: -1 }}
+							whileTap={{ scale: 0.985 }}
+							transition={{ duration: 0.12 }}
 							className="inline-flex items-center gap-2 rounded-xl bg-[#25D366] px-6 py-3 text-sm font-semibold text-white no-underline shadow-sm transition hover:bg-[#20bd5a] hover:shadow-md"
 						>
 							<svg

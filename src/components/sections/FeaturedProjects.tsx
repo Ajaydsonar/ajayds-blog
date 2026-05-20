@@ -29,13 +29,13 @@ export function FeaturedProjects() {
 				{featured.map((project, i) => (
 					<motion.div
 						key={project.id}
-						initial={{ opacity: 0, y: 20 }}
+						initial={{ opacity: 0, y: 8 }}
 						whileInView={{ opacity: 1, y: 0 }}
-						viewport={{ once: true, margin: "-40px" }}
+						viewport={{ once: true, margin: "-20px" }}
 						transition={{
-							duration: 0.5,
-							delay: i * 0.08,
-							ease: [0.22, 1, 0.36, 1],
+							duration: 0.4,
+							delay: i * 0.05,
+							ease: [0.16, 1, 0.3, 1],
 						}}
 					>
 						<Link

@@ -193,22 +193,22 @@ export function HeroCTA({
 	return (
 		<section className="page-wrap mt-10">
 			<motion.div
-				initial={{ opacity: 0, y: 14 }}
+				initial={{ opacity: 0, y: 6 }}
 				animate={{ opacity: 1, y: 0 }}
-				transition={{ duration: 0.55, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+				transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
 			>
 				{/* Themed Card Wrapper */}
 				<div
 					ref={cardRef}
-					className={`island-shell relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/5 shadow-sm transition-all duration-700 hover:shadow-md ${activeTheme.cardBg}`}
+					className={`island-shell relative overflow-hidden rounded-2xl border border-black/5 dark:border-white/5 shadow-sm transition-[background-color,border-color,box-shadow] duration-500 hover:shadow-md ${activeTheme.cardBg}`}
 				>
 					{/* Top Accent Glowing Line */}
 					<div className="absolute top-0 left-6 right-6 h-[2px] overflow-hidden rounded-b-md">
 						<div
-							className={`absolute inset-0 origin-left opacity-80 transition-colors duration-700 ${activeTheme.accent}`}
+							className={`absolute inset-0 origin-left opacity-80 transition-colors duration-500 ${activeTheme.accent}`}
 						/>
 					</div>
-
+ 
 					{/* Core Content Layout */}
 					<div className="flex flex-col justify-between p-6 sm:p-8">
 						{/* CSS Grid ensures zero layout shift */}
@@ -220,16 +220,16 @@ export function HeroCTA({
 									<div
 										// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 										key={`slide-text-${i}`}
-										className={`col-start-1 row-start-1 flex flex-col items-start transition-all duration-700 ease-[0.22,1,0.36,1] ${
+										className={`col-start-1 row-start-1 flex flex-col items-start transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] ${
 											isActive
 												? "opacity-100 translate-y-0 z-10 pointer-events-auto"
-												: "opacity-0 translate-y-3 z-0 pointer-events-none"
+												: "opacity-0 translate-y-1.5 z-0 pointer-events-none"
 										}`}
 										aria-hidden={!isActive}
 									>
 										{/* Themed Badge */}
 										<span
-											className={`mb-4 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase transition-colors duration-500 ${serviceTheme.interactive}`}
+											className={`mb-4 inline-flex items-center gap-1.5 rounded-full border px-2.5 py-1 text-[11px] font-semibold tracking-wide uppercase transition-[color,background-color,border-color] duration-300 ${serviceTheme.interactive}`}
 										>
 											<span className="h-1.5 w-1.5 rounded-full bg-current opacity-80" />
 											{service.badge}
@@ -262,10 +262,10 @@ export function HeroCTA({
 												// biome-ignore lint/suspicious/noArrayIndexKey: <explanation>
 												i
 											}`}
-											className={`col-start-1 row-start-1 inline-flex w-max items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium shadow-sm transition-all duration-500 ease-[0.22,1,0.36,1] hover:scale-[0.98] active:scale-95 ${serviceTheme.interactive} ${
+											className={`col-start-1 row-start-1 inline-flex w-max items-center gap-2 rounded-xl border px-5 py-2.5 text-sm font-medium shadow-sm transition-[opacity,transform] duration-400 ease-[cubic-bezier(0.16,1,0.3,1)] hover:-translate-y-0.5 hover:shadow-md ${serviceTheme.interactive} ${
 												i === current
 													? "opacity-100 translate-x-0 z-10 pointer-events-auto"
-													: "opacity-0 -translate-x-2 z-0 pointer-events-none"
+													: "opacity-0 -translate-x-1.5 z-0 pointer-events-none"
 											}`}
 										>
 											{service.cta}
