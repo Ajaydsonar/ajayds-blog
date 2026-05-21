@@ -107,21 +107,6 @@ export const Route = createFileRoute("/api/chat")({
 			POST: async ({ request }) => {
 				const { messages }: { messages: ChatMessage[] } = await request.json();
 
-				// // 2. Extract the latest user query
-				// const latestUserMessage = messages.findLast((m) => m.role === "user");
-
-				// const userQuery =
-				// 	latestUserMessage?.parts[0].type === "text"
-				// 		? latestUserMessage.parts[0].text
-				// 		: "";
-
-				// // 3. Fetch matching knowledge chunks from Qdrant
-				// let contextText = "";
-				// if (userQuery) {
-				// 	contextText = await searchWebsiteKnowledge(userQuery);
-				// 	// Assuming searchResults is an array of strings or objects containing text
-				// }
-
 				const results = streamText({
 					model: google("gemini-3.1-flash-lite"),
 					system: `
