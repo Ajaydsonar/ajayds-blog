@@ -2,6 +2,7 @@ import { google } from "@ai-sdk/google";
 import { createFileRoute } from "@tanstack/react-router";
 import {
 	convertToModelMessages,
+	createIdGenerator,
 	type InferUITools,
 	stepCountIs,
 	streamText,
@@ -9,9 +10,11 @@ import {
 	tool,
 	type UIDataTypes,
 	type UIMessage,
+	validateUIMessages,
 } from "ai";
 import Airtable from "airtable";
 import { z } from "zod";
+import { loadChatHistory, saveMessage } from "#/lib/chat-store.ts";
 import { searchWebsiteKnowledge } from "#/lib/qdrant.server.ts";
 
 const airTableBase = new Airtable({
@@ -105,7 +108,17 @@ export const Route = createFileRoute("/api/chat")({
 	server: {
 		handlers: {
 			POST: async ({ request }) => {
-				const { messages }: { messages: ChatMessage[] } = await request.json();
+				const { message, id }: { message: ChatMessage; id: string } =
+					await request.json();
+
+				const previousMessages = await loadChatHistory(id);
+				// Append new message to previousMessages messages
+				const messages = [...(previousMessages ?? []), message];
+
+				const validatedMessage = await validateUIMessages<ChatMessage>({
+					messages,
+					tools,
+				});
 
 				const results = streamText({
 					model: google("gemini-3.1-flash-lite"),
@@ -209,7 +222,7 @@ Keep formatting minimal, clean, and easy to read.
 - If a visitor is interested in working with Ajay or building something, ask conversational, warm questions to get their **Name**, **Email**, **Phone with country code**, and project description.
 - Example: "I'd love to help you get in touch with Ajay! Could you share your name, email, phone number with country code, and a brief description of what you want to build?"
 - Once you have the required info, call \`saveLead\` in the background and confirm to the visitor that they are all set and Ajay will reach out..`,
-					messages: await convertToModelMessages(messages),
+					messages: await convertToModelMessages(validatedMessage),
 					tools,
 					stopWhen: stepCountIs(5),
 
@@ -242,7 +255,21 @@ Keep formatting minimal, clean, and easy to read.
 					},
 				});
 
-				return results.toUIMessageStreamResponse();
+				return results.toUIMessageStreamResponse({
+					originalMessages: messages,
+					generateMessageId: createIdGenerator({
+						prefix: "msg",
+						separator: "-",
+						size: 16,
+					}),
+					onFinish: async ({ messages }) => {
+						try {
+							await saveMessage(id, messages as ChatMessage[]);
+						} catch (error) {
+							console.error("error saving chat history:", error);
+						}
+					},
+				});
 			},
 		},
 	},

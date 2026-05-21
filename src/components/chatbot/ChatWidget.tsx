@@ -1,12 +1,15 @@
 import { useChat } from "@ai-sdk/react";
 import { DefaultChatTransport, type UIMessage } from "ai";
 import * as React from "react";
+import type { ChatMessage as ChatMessageType } from "#/routes/api/chat.ts";
 import { ChatInput } from "./ChatInput";
 import { ChatMessage } from "./ChatMessage";
 
 interface ChatWidgetProps {
 	className?: string;
 	positionClassName?: string;
+	id?: string;
+	initialMessages?: ChatMessageType[];
 }
 
 const welcomeMessage: UIMessage = {
@@ -32,13 +35,20 @@ function getMessageText(message?: UIMessage) {
 export function ChatWidget({
 	className = "",
 	positionClassName = "fixed right-4 bottom-[calc(env(safe-area-inset-bottom)+6rem)] z-[60] sm:right-6 sm:bottom-6",
+	id,
+	initialMessages,
 }: ChatWidgetProps) {
 	const [isOpen, setIsOpen] = React.useState(false);
-	// const chatContainerRef = React.useRef(null);
 
 	const { messages, sendMessage, status, error } = useChat({
+		messages: initialMessages,
+		id,
 		transport: new DefaultChatTransport({
 			api: "/api/chat",
+			// only send the last message to the server:
+			prepareSendMessagesRequest({ messages, id }) {
+				return { body: { message: messages[messages.length - 1], id } };
+			},
 		}),
 	});
 

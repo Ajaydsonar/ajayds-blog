@@ -1,7 +1,7 @@
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import { createRootRoute, HeadContent, Scripts } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { ChatWidget } from "#/components/chatbot/ChatWidget.tsx";
+// import { ChatWidget } from "#/components/chatbot/ChatWidget.tsx";
 import { BottomNav } from "#/components/layout/BottonNav";
 import ThemeToggle from "@/components/layout/ThemeToggle";
 // import Footer from "../components/Footer";
@@ -51,7 +51,6 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 					<ThemeToggle />
 				</div>
 				{children}
-				<ChatWidget />
 				<BottomNav />
 				<TanStackDevtools
 					config={{
