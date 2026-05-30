@@ -1,55 +1,115 @@
-import { useChat } from "@ai-sdk/react";
-import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
-
-// import { chatMessage } from "#/server/chat.action.ts";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { getPosts } from "#/lib/sanity/posts.action.ts";
 
 export const Route = createFileRoute("/blog/")({
-	component: Chat,
+	loader: async () => {
+		return getPosts();
+	},
+	head: () => ({
+		meta: [
+			{ title: "Blog | Your Site Name" },
+			{
+				name: "description",
+				content:
+					"Read practical guides, tutorials, and insights from Your Site Name.",
+			},
+			{
+				name: "robots",
+				content: "index,follow,max-image-preview:large",
+			},
+			{ property: "og:title", content: "Blog | Your Site Name" },
+			{
+				property: "og:description",
+				content:
+					"Read practical guides, tutorials, and insights from Your Site Name.",
+			},
+			{ property: "og:type", content: "website" },
+		],
+		links: [
+			{
+				rel: "canonical",
+				href: `${process.env.SITE_URL}/blog`,
+			},
+		],
+	}),
+	component: BlogIndexPage,
 });
 
-function Chat() {
-	const [input, setInput] = useState("");
-	const { messages, sendMessage } = useChat();
+function BlogIndexPage() {
+	const posts = Route.useLoaderData();
 
 	return (
-		<div className="flex flex-col w-full max-w-md py-24 mx-auto">
-			{messages.map((message) => (
-				<div key={message.id} className="whitespace-pre-wrap">
-					{message.role === "user" ? "User: " : "AI: "}
-					{/** biome-ignore lint/suspicious/useIterableCallbackReturn: <> */}
-					{message.parts.map((part, i) => {
-						switch (part.type) {
-							case "text":
-								return (
-									// biome-ignore lint/suspicious/noArrayIndexKey: <>
-									<div key={`${message.id}-${i}`}>{part.text}</div>
-								);
-						}
-					})}
-				</div>
-			))}
+		<main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
+			<header className="mb-12 max-w-3xl">
+				<p className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
+					Blog
+				</p>
+				<h1 className="text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl">
+					Latest articles
+				</h1>
+				<p className="mt-4 text-lg leading-8 text-zinc-600">
+					Practical posts, guides, and insights.
+				</p>
+			</header>
 
-			<form
-				onSubmit={(e) => {
-					e.preventDefault();
-					sendMessage({ text: input });
-					setInput("");
+			<section className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+				{posts.map((post) => {
+					const imageUrl = post.coverImage?.url;
 
-					window.scrollTo({
-						top: document.body.scrollHeight,
-						behavior: "smooth",
-					});
-				}}
-			>
-				<input
-					className="fixed bg-zinc-100 dark:bg-zinc-900 bottom-20 w-full max-w-md p-2 mb-8 border border-zinc-300 dark:border-zinc-800 rounded shadow-xl"
-					value={input}
-					placeholder="Say something..."
-					onChange={(e) => setInput(e.currentTarget.value)}
-				/>
-			</form>
-		</div>
+					return (
+						<article
+							key={post._id}
+							className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+						>
+							<Link
+								to="/blog/$slug"
+								params={{ slug: post.slug || "" }}
+								className="block"
+							>
+								{imageUrl ? (
+									<img
+										src={imageUrl}
+										alt={post.coverImage?.alt || post.title || ""}
+										width={post.coverImage?.dimensions?.width || 1200}
+										height={post.coverImage?.dimensions?.height || 675}
+										loading="lazy"
+										className="aspect-video w-full object-cover"
+									/>
+								) : null}
+
+								<div className="p-6">
+									<time
+										dateTime={post.publishedAt || ""}
+										className="text-sm text-zinc-500"
+									>
+										{new Date(post.publishedAt || "").toLocaleDateString(
+											"en-IN",
+											{
+												day: "numeric",
+												month: "long",
+												year: "numeric",
+											},
+										)}
+									</time>
+
+									<h2 className="mt-3 text-xl font-semibold leading-7 text-zinc-950">
+										{post.title}
+									</h2>
+
+									<p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-600">
+										{post.excerpt || post.description}
+									</p>
+
+									<p className="mt-5 text-sm font-medium text-zinc-950">
+										Read article →
+									</p>
+								</div>
+							</Link>
+						</article>
+					);
+				})}
+			</section>
+		</main>
 	);
 }
 
