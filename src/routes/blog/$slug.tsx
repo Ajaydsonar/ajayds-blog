@@ -1,95 +1,95 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { PortableArticle } from "#/components/sanity/PortableArticle";
 import { getPostBySlug } from "#/lib/sanity/posts.action.ts";
+import { absoluteUrl, getOgImage, seo, site } from "#/lib/seo";
 
-const siteUrl = (process.env.SITE_URL ?? "http://localhost:3000").replace(
-	/\/$/,
-	"",
-);
+// const siteUrl = (process.env.SITE_URL ?? "http://localhost:3000").replace(
+// 	/\/$/,
+// 	"",
+// );
+// const siteName = process.env.SITE_NAME ?? "Your Site Name";
 
-const siteName = process.env.SITE_NAME ?? "Your Site Name";
-
-function cleanMeta(value: string | null | undefined, fallback = "") {
-	return value ?? fallback;
-}
+// function cleanMeta(value: string | null | undefined, fallback = "") {
+// 	return value ?? fallback;
+// }
 
 export const Route = createFileRoute("/blog/$slug")({
 	loader: async ({ params }) => {
 		return getPostBySlug({ data: { slug: params.slug } });
 	},
 
-	head: ({ loaderData }) => {
+	head: ({ loaderData, params }) => {
 		const post = loaderData;
 
 		if (!post) {
-			return {
-				meta: [
-					{ title: `Post not found | ${siteName}` },
-					{ name: "robots", content: "noindex,nofollow" },
-				],
-			};
+			return seo({
+				title: "Post not found",
+				description: "This blog post could not be found.",
+				path: `/blog/${params.slug}`,
+				noIndex: true,
+			});
 		}
 
-		const slug = cleanMeta(post.slug);
-		const canonical = `${siteUrl}/blog/${slug}`;
+		const slug = post.slug || params.slug;
 
-		const title = cleanMeta(post.seoTitle || post.title, "Blog post");
-		const description = cleanMeta(
-			post.description || post.excerpt,
-			"Read this blog post.",
-		);
+		const title = post.seoTitle || post.title || "Blog post";
 
-		const ogImage = post.coverImage?.url ?? `${siteUrl}/og-default.jpg`;
+		const description =
+			post.description || post.excerpt || "Read this blog post by Ajay Sonar.";
 
-		const publishedAt = cleanMeta(post.publishedAt);
-		const modifiedAt = cleanMeta(
-			post.modifiedAt || post._updatedAt || post.publishedAt,
-		);
+		const image = post.coverImage?.url || site.defaultOgImage;
+
+		const canonicalPath = `/blog/${slug}`;
+		const canonicalUrl = absoluteUrl(canonicalPath);
+		const ogImage = getOgImage(image);
+
+		const publishedAt = post.publishedAt || undefined;
+		const modifiedAt =
+			post.modifiedAt || post._updatedAt || post.publishedAt || undefined;
+
+		const baseSeo = seo({
+			title,
+			description,
+			path: canonicalPath,
+			image,
+			type: "article",
+		});
+
+		const categoryMeta = (post.categories ?? [])
+			.map((category) => category.title)
+			.filter((title): title is string => Boolean(title))
+			.map((title) => ({
+				property: "article:section",
+				content: title,
+			}));
 
 		const jsonLd = {
 			"@context": "https://schema.org",
 			"@type": "BlogPosting",
-			mainEntityOfPage: canonical,
+			mainEntityOfPage: {
+				"@type": "WebPage",
+				"@id": canonicalUrl,
+			},
 			headline: title,
 			description,
 			image: [ogImage],
-			datePublished: publishedAt,
-			dateModified: modifiedAt,
+			...(publishedAt ? { datePublished: publishedAt } : {}),
+			...(modifiedAt ? { dateModified: modifiedAt } : {}),
 			author: {
 				"@type": "Person",
-				name: post.author?.name ?? siteName,
+				name: post.author?.name || "Ajay Sonar",
 			},
 			publisher: {
-				"@type": "Organization",
-				name: siteName,
-				logo: {
-					"@type": "ImageObject",
-					url: `${siteUrl}/logo.png`,
-				},
+				"@type": "Person",
+				name: "Ajay Sonar",
 			},
 		};
 
 		return {
+			...baseSeo,
 			meta: [
-				{ title: `${title} | ${siteName}` },
-				{ name: "description", content: description },
-				{
-					name: "robots",
-					content: "index,follow,max-image-preview:large",
-				},
-
-				{ property: "og:title", content: title },
-				{ property: "og:description", content: description },
-				{ property: "og:type", content: "article" },
-				{ property: "og:url", content: canonical },
-				{ property: "og:image", content: ogImage },
-				{ property: "og:site_name", content: siteName },
-
-				{ name: "twitter:card", content: "summary_large_image" },
-				{ name: "twitter:title", content: title },
-				{ name: "twitter:description", content: description },
-				{ name: "twitter:image", content: ogImage },
+				...baseSeo.meta,
 
 				...(publishedAt
 					? [{ property: "article:published_time", content: publishedAt }]
@@ -102,12 +102,8 @@ export const Route = createFileRoute("/blog/$slug")({
 				...(post.author?.name
 					? [{ property: "article:author", content: post.author.name }]
 					: []),
-			],
-			links: [
-				{
-					rel: "canonical",
-					href: canonical,
-				},
+
+				...categoryMeta,
 			],
 			scripts: [
 				{
@@ -124,51 +120,126 @@ export const Route = createFileRoute("/blog/$slug")({
 	}),
 
 	component: BlogPostPage,
-	notFoundComponent: () => <div>Not found!</div>,
 });
 
 function BlogPostPage() {
 	const post = Route.useLoaderData();
 
 	if (!post) {
-		return <main className="px-4 py-12">Post not found.</main>;
+		return (
+			<main className="px-4 py-24 text-center">
+				<p style={{ color: "var(--sea-ink-soft)" }}>Post not found.</p>
+			</main>
+		);
 	}
 
 	const heroImage = post.coverImage?.url ?? null;
 
 	return (
-		<main>
+		<main className="pb-24">
 			<article>
-				<header className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-					<div className="mb-6 flex flex-wrap gap-2">
-						{post.categories?.map((category) => (
-							<span
-								key={category.slug ?? category.title}
-								className="rounded-full bg-zinc-100 px-3 py-1 text-sm font-medium text-zinc-700"
-							>
-								{category.title}
-							</span>
-						))}
-					</div>
+				{/* ── Header ──────────────────────────────────────── */}
+				<header className="mx-auto max-w-3xl px-4 py-16 sm:px-6 lg:px-8">
+					{/* Back link */}
+					<Link
+						to="/blog"
+						className="group mb-8 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider transition-colors duration-200"
+						style={{ color: "var(--sea-ink-soft)" }}
+					>
+						<svg
+							className="h-3.5 w-3.5 transition-transform duration-200 group-hover:-translate-x-0.5"
+							viewBox="0 0 16 16"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M13 8H3M7 12l-4-4 4-4" />
+						</svg>
+						All posts
+					</Link>
 
-					<h1 className="text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl">
+					{/* Categories */}
+					{post.categories && post.categories.length > 0 && (
+						<div className="mb-5 flex flex-wrap gap-2">
+							{post.categories.map((category) => (
+								<span
+									key={category.slug ?? category.title}
+									className="rounded-full px-3 py-1 text-xs font-semibold uppercase tracking-wide"
+									style={{
+										background: "var(--chip-bg)",
+										border: "1px solid var(--chip-line)",
+										color: "var(--palm)",
+									}}
+								>
+									{category.title}
+								</span>
+							))}
+						</div>
+					)}
+
+					{/* Title */}
+					<h1
+						className="font-['Fraunces'] text-4xl font-bold leading-[1.1] tracking-tight sm:text-5xl"
+						style={{ color: "var(--sea-ink)" }}
+					>
 						{post.title ?? "Untitled post"}
 					</h1>
 
-					{post.excerpt || post.description ? (
-						<p className="mt-6 text-xl leading-8 text-zinc-600">
+					{/* Excerpt / description */}
+					{(post.excerpt || post.description) && (
+						<p
+							className="mt-5 text-lg leading-8"
+							style={{ color: "var(--sea-ink-soft)" }}
+						>
 							{post.excerpt || post.description}
 						</p>
-					) : null}
+					)}
 
-					<div className="mt-8 flex items-center gap-4 text-sm text-zinc-500">
-						{post.author?.name ? <span>{post.author.name}</span> : null}
+					{/* Author + date row */}
+					<div
+						className="mt-8 flex items-center gap-3 text-sm"
+						style={{ color: "var(--sea-ink-soft)" }}
+					>
+						{post.author?.name && (
+							<>
+								{/* Author avatar initials */}
+								<span
+									className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-xs font-bold"
+									style={{
+										background: "var(--hero-a)",
+										color: "var(--lagoon-deep)",
+									}}
+								>
+									{post.author.name
+										.split(" ")
+										.map((n: string) => n[0])
+										.join("")
+										.slice(0, 2)
+										.toUpperCase()}
+								</span>
+								<span
+									className="font-medium"
+									style={{ color: "var(--sea-ink)" }}
+								>
+									{post.author.name}
+								</span>
+							</>
+						)}
 
-						{post.author?.name && post.publishedAt ? (
-							<span aria-hidden="true">•</span>
-						) : null}
+						{post.author?.name && post.publishedAt && (
+							<span
+								className="text-[1.2em]"
+								style={{ color: "var(--line)" }}
+								aria-hidden="true"
+							>
+								·
+							</span>
+						)}
 
-						{post.publishedAt ? (
+						{post.publishedAt && (
 							<time dateTime={post.publishedAt}>
 								{new Date(post.publishedAt).toLocaleDateString("en-IN", {
 									day: "numeric",
@@ -176,32 +247,65 @@ function BlogPostPage() {
 									year: "numeric",
 								})}
 							</time>
-						) : null}
+						)}
 					</div>
 				</header>
 
-				{heroImage ? (
-					<figure className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-						<img
-							src={heroImage}
-							alt={post.coverImage?.alt ?? post.title ?? ""}
-							width={post.coverImage?.dimensions?.width ?? 1600}
-							height={post.coverImage?.dimensions?.height ?? 900}
-							fetchPriority="high"
-							className="aspect-video w-full rounded-3xl object-cover shadow-sm"
-						/>
-
-						{post.coverImage?.caption ? (
-							<figcaption className="mt-3 text-center text-sm text-zinc-500">
+				{/* ── Hero image — constrained to content width ─── */}
+				{heroImage && (
+					<figure className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+						<div className="overflow-hidden rounded-2xl shadow-sm">
+							<img
+								src={heroImage}
+								alt={post.coverImage?.alt ?? post.title ?? ""}
+								width={post.coverImage?.dimensions?.width ?? 1200}
+								height={post.coverImage?.dimensions?.height ?? 675}
+								fetchPriority="high"
+								decoding="async"
+								className="aspect-video w-full object-cover"
+							/>
+						</div>
+						{post.coverImage?.caption && (
+							<figcaption
+								className="mt-3 text-center text-xs"
+								style={{ color: "var(--sea-ink-soft)" }}
+							>
 								{post.coverImage.caption}
 							</figcaption>
-						) : null}
+						)}
 					</figure>
-				) : null}
+				)}
 
-				<section className="px-4 py-12 sm:px-6 lg:px-8">
+				{/* ── Article body ─────────────────────────────── */}
+				<section className="px-4 pt-12 sm:px-6 lg:px-8">
 					{post.body ? <PortableArticle value={post.body} /> : null}
 				</section>
+
+				{/* ── Footer nav ───────────────────────────────── */}
+				<div
+					className="mx-auto mt-16 max-w-3xl border-t px-4 pt-8 sm:px-6 lg:px-8"
+					style={{ borderColor: "var(--line)" }}
+				>
+					<Link
+						to="/blog"
+						className="group inline-flex items-center gap-1.5 text-sm font-semibold transition-colors duration-200"
+						style={{ color: "var(--lagoon)" }}
+					>
+						<svg
+							className="h-4 w-4 transition-transform duration-200 group-hover:-translate-x-0.5"
+							viewBox="0 0 16 16"
+							fill="none"
+							stroke="currentColor"
+							strokeWidth="2"
+							strokeLinecap="round"
+							strokeLinejoin="round"
+							aria-hidden="true"
+						>
+							<path d="M13 8H3M7 12l-4-4 4-4" />
+						</svg>
+						Back to all posts
+					</Link>
+				</div>
 			</article>
 		</main>
 	);

@@ -25,7 +25,8 @@ export const Route = createRootRoute({
 			},
 			{
 				name: "description",
-				content: "AI Fullstack developer. Web apps, APIs, AI Automation.",
+				content:
+					"Ajayds helps small businesses and founders automate operations with custom AI — from intelligent chatbots and data pipelines to web scraping and full AI SaaS products. Built to scale.",
 			},
 		],
 		links: [
@@ -52,7 +53,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				</div>
 				{children}
 				<BottomNav />
-				<TanStackDevtools
+				{/* <TanStackDevtools
 					config={{
 						position: "bottom-right",
 					}}
@@ -62,7 +63,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 							render: <TanStackRouterDevtoolsPanel />,
 						},
 					]}
-				/>
+				/> */}
 				<Scripts />
 			</body>
 		</html>

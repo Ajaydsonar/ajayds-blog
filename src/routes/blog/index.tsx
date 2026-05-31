@@ -1,37 +1,45 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { getPosts } from "#/lib/sanity/posts.action.ts";
+import { absoluteUrl, seo } from "#/lib/seo";
 
 export const Route = createFileRoute("/blog/")({
 	loader: async () => {
 		return getPosts();
 	},
-	head: () => ({
-		meta: [
-			{ title: "Blog | Your Site Name" },
-			{
-				name: "description",
-				content:
-					"Read practical guides, tutorials, and insights from Your Site Name.",
+
+	head: () => {
+		const baseSeo = seo({
+			title: "Blog",
+			description:
+				"Practical AI Powered Software Development and Automation tutorials, notes, and guides by Ajay Sonar.",
+			path: "/blog",
+			type: "website",
+		});
+
+		const jsonLd = {
+			"@context": "https://schema.org",
+			"@type": "Blog",
+			name: "AjayDS Blog",
+			description:
+				"Practical AI Powered Software Development and Automation tutorials, notes, and guides by Ajay Sonar.",
+			url: absoluteUrl("/blog"),
+			publisher: {
+				"@type": "Person",
+				name: "Ajay Sonar",
 			},
-			{
-				name: "robots",
-				content: "index,follow,max-image-preview:large",
-			},
-			{ property: "og:title", content: "Blog | Your Site Name" },
-			{
-				property: "og:description",
-				content:
-					"Read practical guides, tutorials, and insights from Your Site Name.",
-			},
-			{ property: "og:type", content: "website" },
-		],
-		links: [
-			{
-				rel: "canonical",
-				href: `${process.env.SITE_URL}/blog`,
-			},
-		],
-	}),
+		};
+
+		return {
+			...baseSeo,
+			scripts: [
+				{
+					type: "application/ld+json",
+					children: JSON.stringify(jsonLd),
+				},
+			],
+		};
+	},
+
 	component: BlogIndexPage,
 });
 
@@ -39,129 +47,153 @@ function BlogIndexPage() {
 	const posts = Route.useLoaderData();
 
 	return (
-		<main className="mx-auto max-w-6xl px-4 py-12 sm:px-6 lg:px-8">
-			<header className="mb-12 max-w-3xl">
-				<p className="mb-3 text-sm font-semibold uppercase tracking-wide text-zinc-500">
-					Blog
+		<main className="mx-auto max-w-5xl px-4 py-16 sm:px-6 lg:px-8">
+			{/* Header */}
+			<header className="mb-16">
+				<p
+					className="mb-3 text-xs font-semibold uppercase tracking-[0.18em]"
+					style={{ color: "var(--lagoon)" }}
+				>
+					Writing
 				</p>
-				<h1 className="text-4xl font-bold tracking-tight text-zinc-950 sm:text-5xl">
-					Latest articles
+				<h1
+					className="font-['Fraunces'] text-5xl font-bold leading-[1.1] tracking-tight sm:text-6xl"
+					style={{ color: "var(--sea-ink)" }}
+				>
+					From Code to Impact
 				</h1>
-				<p className="mt-4 text-lg leading-8 text-zinc-600">
-					Practical posts, guides, and insights.
+				<p
+					className="mt-4 max-w-lg text-base leading-relaxed"
+					style={{ color: "var(--sea-ink-soft)" }}
+				>
+					Cases, code, and ideas from building AI solutions for real businesses.
 				</p>
 			</header>
 
-			<section className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-				{posts.map((post) => {
-					const imageUrl = post.coverImage?.url;
-
-					return (
-						<article
-							key={post._id}
-							className="overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-md"
-						>
-							<Link
-								to="/blog/$slug"
-								params={{ slug: post.slug || "" }}
-								className="block"
+			{/* Posts grid */}
+			{posts.length === 0 ? (
+				<p style={{ color: "var(--sea-ink-soft)" }}>
+					No posts yet — check back soon.
+				</p>
+			) : (
+				<section className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+					{posts.map((post) => {
+						const imageUrl = post.coverImage?.url;
+						return (
+							<article
+								key={post._id}
+								className="group relative flex flex-col overflow-hidden rounded-2xl transition-transform duration-300 hover:-translate-y-1"
+								style={{
+									background: "var(--surface)",
+									border: "1px solid var(--line)",
+									backdropFilter: "blur(8px)",
+								}}
 							>
-								{imageUrl ? (
-									<img
-										src={imageUrl}
-										alt={post.coverImage?.alt || post.title || ""}
-										width={post.coverImage?.dimensions?.width || 1200}
-										height={post.coverImage?.dimensions?.height || 675}
-										loading="lazy"
-										className="aspect-video w-full object-cover"
-									/>
-								) : null}
+								<Link
+									to="/blog/$slug"
+									params={{ slug: post.slug || "" }}
+									className="flex flex-1 flex-col"
+								>
+									{/* Cover image */}
+									{imageUrl ? (
+										<div className="relative overflow-hidden">
+											<img
+												src={imageUrl}
+												alt={post.coverImage?.alt || post.title || ""}
+												width={post.coverImage?.dimensions?.width || 800}
+												height={post.coverImage?.dimensions?.height || 450}
+												loading="lazy"
+												decoding="async"
+												className="aspect-video w-full object-cover transition-transform duration-500 group-hover:scale-[1.03]"
+											/>
+											{/* Subtle gradient overlay */}
+											<div
+												className="pointer-events-none absolute inset-0"
+												style={{
+													background:
+														"linear-gradient(to top, rgba(0,0,0,0.15) 0%, transparent 50%)",
+												}}
+											/>
+										</div>
+									) : (
+										/* Placeholder tile when no cover */
+										<div
+											className="flex aspect-video w-full items-center justify-center"
+											style={{ background: "var(--hero-a)" }}
+										>
+											<span
+												className="text-4xl font-['Fraunces'] font-bold opacity-20"
+												style={{ color: "var(--lagoon)" }}
+											>
+												{post.title?.[0] ?? "✦"}
+											</span>
+										</div>
+									)}
 
-								<div className="p-6">
-									<time
-										dateTime={post.publishedAt || ""}
-										className="text-sm text-zinc-500"
-									>
-										{new Date(post.publishedAt || "").toLocaleDateString(
-											"en-IN",
-											{
-												day: "numeric",
-												month: "long",
-												year: "numeric",
-											},
+									{/* Card body */}
+									<div className="flex flex-1 flex-col p-5">
+										{/* Date */}
+										<time
+											dateTime={post.publishedAt || ""}
+											className="text-xs font-medium"
+											style={{ color: "var(--sea-ink-soft)" }}
+										>
+											{new Date(post.publishedAt || "").toLocaleDateString(
+												"en-IN",
+												{
+													day: "numeric",
+													month: "long",
+													year: "numeric",
+												},
+											)}
+										</time>
+
+										{/* Title */}
+										<h2
+											className="mt-2 text-[1.05rem] font-semibold leading-snug tracking-tight"
+											style={{ color: "var(--sea-ink)" }}
+										>
+											{post.title}
+										</h2>
+
+										{/* Excerpt */}
+										{(post.excerpt || post.description) && (
+											<p
+												className="mt-2 line-clamp-2 text-sm leading-relaxed"
+												style={{ color: "var(--sea-ink-soft)" }}
+											>
+												{post.excerpt || post.description}
+											</p>
 										)}
-									</time>
 
-									<h2 className="mt-3 text-xl font-semibold leading-7 text-zinc-950">
-										{post.title}
-									</h2>
-
-									<p className="mt-3 line-clamp-3 text-sm leading-6 text-zinc-600">
-										{post.excerpt || post.description}
-									</p>
-
-									<p className="mt-5 text-sm font-medium text-zinc-950">
-										Read article →
-									</p>
-								</div>
-							</Link>
-						</article>
-					);
-				})}
-			</section>
+										{/* CTA */}
+										<div className="mt-auto pt-4">
+											<span
+												className="inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider transition-colors duration-200"
+												style={{ color: "var(--lagoon)" }}
+											>
+												Read
+												<svg
+													className="h-3.5 w-3.5 transition-transform duration-200 group-hover:translate-x-0.5"
+													viewBox="0 0 16 16"
+													fill="none"
+													stroke="currentColor"
+													strokeWidth="2"
+													strokeLinecap="round"
+													strokeLinejoin="round"
+													aria-hidden="true"
+												>
+													<path d="M3 8h10M9 4l4 4-4 4" />
+												</svg>
+											</span>
+										</div>
+									</div>
+								</Link>
+							</article>
+						);
+					})}
+				</section>
+			)}
 		</main>
 	);
 }
-
-// function RouteComponent() {
-// 	const [content, setContent] = useState("");
-// 	const [isAnswering, setIsAnswering] = useState(false);
-// 	const outputdivRef = useRef<HTMLDivElement>(null);
-
-// 	const handleAI = async () => {
-// 		if (!content.trim()) return;
-// 		setIsAnswering(true);
-// 		setContent("");
-// 		if (outputdivRef.current) {
-// 			outputdivRef.current.textContent = "answering...";
-// 		}
-
-// 		// if (!response.ok) {
-// 		// 	throw new Error(data.error || "Chat request failed");
-// 		// }
-// 		try {
-// 			const data = await chatMessage({ data: { message: content } });
-
-// 			if (outputdivRef.current) {
-// 				outputdivRef.current.textContent = data.answer || "";
-// 			}
-// 			console.log("using server fn");
-// 		} catch (error: any) {
-// 			console.log("error : ", error.message);
-// 		}
-
-// 		setIsAnswering(false);
-// 	};
-// 	return (
-// 		<div className="flex flex-col">
-// 			<div className="w-100 h-100 my-4 mx-auto border" ref={outputdivRef}></div>
-// 			<div className="mx-auto">
-// 				<input
-// 					value={content}
-// 					onChange={(e) => setContent(e.target.value)}
-// 					type="text"
-// 					placeholder="enter query"
-// 					className="outline-blue-300  px-2 py-1 "
-// 				/>
-// 				<button
-// 					disabled={isAnswering || !content.trim()}
-// 					onClick={handleAI}
-// 					type="button"
-// 					className="m-4 text-blue-500 px-2 py-1 border border-blue-300"
-// 				>
-// 					launch
-// 				</button>
-// 			</div>
-// 		</div>
-// 	);
-// }
